@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — ระบบจัดการสินค้า</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">🌸</div>
+      <div class="login-title">ระบบจัดการสินค้า</div>
+      <div class="login-sub">กรอกข้อมูลเพื่อเข้าสู่ระบบ</div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="login-form">
+      <div class="form-group">
+        <label class="form-label">อีเมล</label>
+        <input class="form-input" type="email" id="email" placeholder="admin@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่าน</label>
+        <input class="form-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="loginBtn" onclick="doLogin()" style="width:100%;justify-content:center;padding:10px;">
+        เข้าสู่ระบบ
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+auth.onAuthStateChanged(user => {
+  if (user) window.location.href = 'products.html';
+});
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorMsg');
+
+  if (!email || !password) {
+    showError('กรุณากรอกอีเมลและรหัสผ่าน');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'กำลังเข้าสู่ระบบ...';
+  err.classList.remove('show');
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    window.location.href = 'products.html';
+  } catch (e) {
+    const msgs = {
+      'auth/user-not-found': 'ไม่พบบัญชีผู้ใช้นี้',
+      'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
+      'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง',
+      'auth/too-many-requests': 'ลองใหม่อีกครั้งในภายหลัง',
+    };
+    showError(msgs[e.code] || 'เกิดข้อผิดพลาด: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'เข้าสู่ระบบ';
+  }
+}
+
+function showError(msg) {
+  const err = document.getElementById('errorMsg');
+  err.textContent = msg;
+  err.classList.add('show');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
